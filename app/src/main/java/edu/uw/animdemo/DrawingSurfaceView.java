@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import java.util.HashMap;
+
 /**
  * An example SurfaceView for generating graphics on
  * @author Joel Ross
@@ -31,6 +33,8 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
     private Paint goldPaint; //drawing variables (pre-defined for speed)
 
     public Ball ball; //public for easy access
+
+    private HashMap<Integer, Ball> touches;
 
 
     /**
@@ -60,6 +64,8 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
         whitePaint.setColor(Color.WHITE);
         goldPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         goldPaint.setColor(Color.rgb(145, 123, 76));
+
+        touches = new HashMap<>();
 
         init();
     }
@@ -118,7 +124,10 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
 
         canvas.drawColor(Color.rgb(51,10,111)); //purple out the background
 
-        canvas.drawCircle(ball.cx, ball.cy, ball.radius, whitePaint); //we can draw directly onto the canvas
+
+        for (Ball ball : touches.values()) {
+            canvas.drawCircle(ball.cx, ball.cy, ball.radius, whitePaint); //we can draw directly onto the canvas
+        }
     }
 
 
@@ -158,6 +167,23 @@ public class DrawingSurfaceView extends SurfaceView implements SurfaceHolder.Cal
             }
         }
         Log.d(TAG, "Drawing thread shut down");
+    }
+
+    synchronized void addTouch(int pointerId, float x, float y) {
+        Ball ball = new Ball(x, y, 25);
+        touches.put(pointerId, ball);
+    }
+
+    synchronized void removeTouch(int pointerId) {
+        touches.remove(pointerId);
+    }
+
+    synchronized void moveTouch(int pointerId, float x, float y) {
+        Ball ball = touches.get(pointerId);
+        if (ball != null) {
+            ball.cx = x;
+            ball.cy = y;
+        }
     }
 
     /**
